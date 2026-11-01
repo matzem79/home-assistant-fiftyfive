@@ -15,7 +15,7 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 if ! gh repo view "$target_repo" --json nameWithOwner >/dev/null 2>&1; then
-    gh repo fork pimhofstee/home-assistant-fiftyfive --clone=false --remote=false
+    gh repo fork pimhofstee/home-assistant-fiftyfive --clone=false
 fi
 if git remote get-url own-fork >/dev/null 2>&1; then
     actual_remote=$(git remote get-url own-fork)
