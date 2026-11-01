@@ -82,6 +82,9 @@
             },
             "total_energy_delivered": {
                 "name": "Totaal geleverde energie"
+            },
+            "hardware_meter": {
+                "name": "Hardwaremeter"
             }
         }
     },
@@ -167,6 +170,28 @@
         "check_for_update": {
             "name": "Controleer op update",
             "description": "Forceer direct een controle op GitHub voor een nieuwere versie van de integratie. Als er een nieuwere versie is, verschijnt er meteen een melding in het Home Assistant meldingencentrum in plaats van te wachten op de periodieke controle."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Kies laadpunt",
+                "data": {
+                    "charger": "Laadpunt"
+                }
+            },
+            "sources": {
+                "title": "Lokale meetbronnen",
+                "description": "Selecteer extern vermogen, een energieteller, beide of geen. Lege velden gebruiken het portaal. Bronnen moeten alleen dit laadpunt meten. De limiet verwijdert pieken.",
+                "data": {
+                    "power_entity": "Vermogenssensor (optioneel)",
+                    "energy_entity": "Energieteller (optioneel)",
+                    "max_power_kw": "Maximaal vermogen"
+                }
+            }
+        },
+        "error": {
+            "invalid_source": "Sensor ontbreekt, ongeldige eenheid of 50five-sensor als bron."
         }
     }
 }

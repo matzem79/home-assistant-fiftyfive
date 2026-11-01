@@ -17,7 +17,7 @@ CONF_COOKIES = "session_cookies"
 
 # GitHub repository that publishes the releases for this integration.  Used by
 # the update checker to notify the user when a newer version is available.
-UPDATE_REPO = "pimhofstee/50five-HA-2fa"
+UPDATE_REPO = "matzem79/home-assistant-fiftyfive"
 UPDATE_LATEST_RELEASE_URL = (
     f"https://api.github.com/repos/{UPDATE_REPO}/releases/latest"
 )
@@ -35,3 +35,8 @@ UPDATE_CHECK_INTERVAL = timedelta(minutes=15)
 # portal exposes a rolling ~3-day hourly window, so an hourly refresh keeps the
 # statistics filled without gaps (e.g. after HA downtime).
 STATISTICS_IMPORT_INTERVAL = timedelta(hours=1)
+
+CONF_LOCAL_SOURCES = "local_sources"
+CONF_POWER_ENTITY = "power_entity"
+CONF_ENERGY_ENTITY = "energy_entity"
+CONF_MAX_POWER = "max_power_kw"

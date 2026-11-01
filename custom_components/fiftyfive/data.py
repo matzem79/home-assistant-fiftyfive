@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -23,3 +23,4 @@ class FiftyfiveData:
     client: FiftyfiveApiClient
     coordinator: FiftyfiveDataUpdateCoordinator
     integration: Integration
+    update_state: dict = field(default_factory=dict)

@@ -82,6 +82,9 @@
             },
             "total_energy_delivered": {
                 "name": "Total energy delivered"
+            },
+            "hardware_meter": {
+                "name": "Hardware meter"
             }
         }
     },
@@ -167,6 +170,28 @@
         "check_for_update": {
             "name": "Check for update",
             "description": "Force an immediate check of GitHub for a newer version of the integration. If a newer version is found, a notification appears in the Home Assistant notification center right away instead of waiting for the periodic check."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Choose charger",
+                "data": {
+                    "charger": "Charger"
+                }
+            },
+            "sources": {
+                "title": "Local measurement sources",
+                "description": "Select an external power sensor, energy counter, both, or neither. Empty selections use the portal. Sources must measure this charger only. The power limit rejects spikes.",
+                "data": {
+                    "power_entity": "Power sensor (optional)",
+                    "energy_entity": "Energy counter (optional)",
+                    "max_power_kw": "Maximum power"
+                }
+            }
+        },
+        "error": {
+            "invalid_source": "Sensor missing, unsupported unit or a 50five sensor used as source."
         }
     }
 }

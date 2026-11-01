@@ -1,0 +1,31 @@
+{
+    "entity": {
+        "sensor": {
+            "hardware_meter": {
+                "name": "Wallbox-Zählerstand"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Wallbox auswählen",
+                "data": {
+                    "charger": "Wallbox"
+                }
+            },
+            "sources": {
+                "title": "Lokale Messquellen",
+                "description": "Wähle eine externe Leistungsquelle, einen Energiezähler, beides oder keines. Leere Auswahl verwendet das Portal. Quellen dürfen nur diese Wallbox erfassen. Die Leistungsgrenze verwirft Spitzen.",
+                "data": {
+                    "power_entity": "Leistungssensor (optional)",
+                    "energy_entity": "Energiezähler (optional)",
+                    "max_power_kw": "Maximale Leistung"
+                }
+            }
+        },
+        "error": {
+            "invalid_source": "Sensor nicht vorhanden, falsche Einheit oder 50five-Sensor als Quelle."
+        }
+    }
+}

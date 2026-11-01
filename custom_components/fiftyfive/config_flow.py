@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.core import callback
 from homeassistant.const import CONF_COUNTRY, CONF_PASSWORD, CONF_USERNAME
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
@@ -21,7 +22,8 @@ from .auth import (
     build_base_url,
     extract_cookies,
 )
-from .const import CONF_2FA_CODE, CONF_COOKIES, CONF_CUST_TYPE, DOMAIN, LOGGER
+from .const import (CONF_2FA_CODE, CONF_COOKIES, CONF_CUST_TYPE, DOMAIN, LOGGER,
+                    CONF_LOCAL_SOURCES, CONF_POWER_ENTITY, CONF_ENERGY_ENTITY, CONF_MAX_POWER)
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -31,6 +33,13 @@ class FiftyfiveFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for FiftyFive."""
 
     VERSION = 2
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: config_entries.ConfigEntry):
+        """Configure optional external measurement sources without a new login."""
+        return FiftyfiveOptionsFlow()
+
 
     def __init__(self) -> None:
         """Initialise the flow handler state."""
@@ -141,7 +150,7 @@ class FiftyfiveFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             ),
             errors=_errors,
             description_placeholders={
-                "docs_url": "https://github.com/Crazy-Duck/home-assistant-fiftyfive"
+                "docs_url": "https://github.com/matzem79/home-assistant-fiftyfive"
             },
         )
 
@@ -249,3 +258,61 @@ class FiftyfiveFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             title=self._login_input[CONF_USERNAME],
             data=data,
         )
+
+
+class FiftyfiveOptionsFlow(config_entries.OptionsFlow):
+    """Assign optional energy and power entities to a single charger."""
+
+    async def async_step_init(self, user_input=None):
+        """Choose the charger whose sources should be edited."""
+        if user_input is not None:
+            self._charger = user_input["charger"]
+            return await self.async_step_sources()
+        networks = self.config_entry.runtime_data.coordinator.data
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({vol.Required("charger"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=[
+                    {"value": str(n["IDX"]), "label": str(n.get("NAME") or n["IDX"])}
+                    for n in networks
+                ])
+            )}),
+        )
+
+    async def async_step_sources(self, user_input=None):
+        """Select local sensors and the maximum plausible power."""
+        errors = {}
+        sources = dict(self.config_entry.options.get(CONF_LOCAL_SOURCES, {}))
+        current = sources.get(self._charger, {})
+        if user_input is not None:
+            for key, kind in ((CONF_POWER_ENTITY, "power"), (CONF_ENERGY_ENTITY, "energy")):
+                entity_id = user_input.get(key)
+                if entity_id and entity_id.startswith("sensor."):
+                    state = self.hass.states.get(entity_id)
+                    # Permit temporarily unavailable sensors, but validate units.
+                    if state is None or state.attributes.get("unit_of_measurement") not in (
+                        ("W", "kW") if kind == "power" else ("Wh", "kWh")
+                    ):
+                        errors[key] = "invalid_source"
+            # Prevent feedback loops through this integration's own sensors.
+            from homeassistant.helpers import entity_registry as er
+            registry = er.async_get(self.hass)
+            for key in (CONF_POWER_ENTITY, CONF_ENERGY_ENTITY):
+                if registered := registry.async_get(user_input.get(key, "")):
+                    if registered.platform == DOMAIN:
+                        errors[key] = "invalid_source"
+            if not errors:
+                sources[self._charger] = user_input
+                return self.async_create_entry(title="", data={
+                    **self.config_entry.options, CONF_LOCAL_SOURCES: sources,
+                })
+        schema = {}
+        for key, device_class in ((CONF_POWER_ENTITY, "power"), (CONF_ENERGY_ENTITY, "energy")):
+            marker = vol.Optional(key, description={"suggested_value": current.get(key)})
+            schema[marker] = selector.EntitySelector(selector.EntitySelectorConfig(
+                domain="sensor",
+            ))
+        schema[vol.Required(CONF_MAX_POWER, default=current.get(CONF_MAX_POWER, 11.0))] = selector.NumberSelector(
+            selector.NumberSelectorConfig(min=0.1, max=100, step=0.1, unit_of_measurement="kW", mode="box")
+        )
+        return self.async_show_form(step_id="sources", data_schema=vol.Schema(schema), errors=errors)

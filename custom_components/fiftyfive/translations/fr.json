@@ -82,6 +82,9 @@
             },
             "total_energy_delivered": {
                 "name": "Énergie totale délivrée"
+            },
+            "hardware_meter": {
+                "name": "Compteur matériel"
             }
         }
     },
@@ -167,6 +170,28 @@
         "check_for_update": {
             "name": "Vérifier les mises à jour",
             "description": "Forcer une vérification immédiate sur GitHub d'une version plus récente de l'intégration. Si une version plus récente est trouvée, une notification apparaît immédiatement dans le centre de notifications de Home Assistant au lieu d'attendre la vérification périodique."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Choisir la borne",
+                "data": {
+                    "charger": "Borne"
+                }
+            },
+            "sources": {
+                "title": "Sources de mesure locales",
+                "description": "Choisissez une puissance externe, un compteur énergie, les deux ou aucun. Un champ vide utilise le portail. Les sources doivent mesurer uniquement cette borne. La limite rejette les pics.",
+                "data": {
+                    "power_entity": "Capteur de puissance (facultatif)",
+                    "energy_entity": "Compteur énergie (facultatif)",
+                    "max_power_kw": "Puissance maximale"
+                }
+            }
+        },
+        "error": {
+            "invalid_source": "Capteur absent, unité incorrecte ou capteur 50five utilisé comme source."
         }
     }
 }

@@ -14,6 +14,7 @@ from fiftyfive import (
     Current,
     CustomerType,
     HardReset,
+    Log,
     Market,
     NetworkOverview,
     Overview,
@@ -26,6 +27,7 @@ from fiftyfive import (
 )
 
 from .auth import extract_cookies_for_url
+from .meter import extract_meter_stop, extract_meter_event
 
 if TYPE_CHECKING:
     from aiohttp import ClientSession
@@ -124,6 +126,15 @@ def extract_power_labels(graph: Any) -> list[str]:
     if not isinstance(labels, list):
         return []
     return [str(label) for label in labels]
+
+
+class MeterLog(Log):
+    """Request the same transaction log parameters as the working HA script."""
+
+    @property
+    def params(self) -> dict:
+        """Return channel log parameters."""
+        return super().params | {"detailed": False, "id": None, "extend": False}
 
 
 class FiftyfiveApiClientError(Exception):
@@ -231,6 +242,18 @@ class FiftyfiveApiClient:
                     live_power,
                     network.get("STATUS"),
                 )
+
+        # Reuse the authenticated 2FA session, including its current cookies.
+        # Meter failures must not make status/power sensors unavailable.
+        for network in merged:
+            try:
+                logs = await self._api.make_requests(
+                    [MeterLog(Channel(recharge_spot_id=network["IDX"], channel_id="1"))]
+                )
+                network["METER_STOP_WH"] = extract_meter_stop(logs[0] if logs else None)
+                network["METER_EVENT"] = extract_meter_event(logs[0] if logs else None)
+            except Exception:  # noqa: BLE001 - optional data source
+                _LOGGER.debug("Failed to fetch hardware meter log", exc_info=True)
 
         return merged
 

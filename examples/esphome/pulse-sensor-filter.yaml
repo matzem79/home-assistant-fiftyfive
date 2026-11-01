@@ -1,0 +1,41 @@
+# Nur den vorhandenen pulse_meter-Block ersetzen; keine WLAN-/API-Schlüssel.
+# Skalierung wie im bestehenden YAML: 1000 Imp/kWh = 1 Wh/Imp.
+# Bei 10000 Imp/kWh BEIDE Faktoren ändern: 0.06 -> 0.006 und 0.001 -> 0.0001.
+# Vor dem Flashen anhand der Beschriftung am Stromzähler prüfen!
+sensor:
+  - platform: pulse_meter
+    name: "WB Ladeleistung"
+    pin:
+      number: GPIO4
+      mode:
+        input: true
+        pullup: false
+      inverted: false
+    internal_filter: 30ms
+    timeout: 3s
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.06  # 1000 Imp/kWh; bei 10000 Imp/kWh: 0.006
+      - lambda: |-
+          // Spitzen vor der EMA verwerfen, damit sie nicht nachwirken.
+          if (!std::isfinite(x) || x < 0.0f || x > 11.0f) return {};
+          static float y = 0.0f;
+          const float alpha = 0.25f;
+          if (x <= 0.0001f) {
+            y = 0.0f;
+            return 0.0f;
+          }
+          y = alpha * x + (1.0f - alpha) * y;
+          if (y < 0.03f) y = 0.0f;
+          return y;
+    total:
+      name: "WB Energie gesamt"
+      unit_of_measurement: "kWh"
+      device_class: energy
+      state_class: total_increasing
+      accuracy_decimals: 3
+      filters:
+        - multiply: 0.001  # 1000 Imp/kWh; bei 10000 Imp/kWh: 0.0001

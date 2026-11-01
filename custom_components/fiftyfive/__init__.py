@@ -2,7 +2,7 @@
 Custom integration to integrate 50five with Home Assistant.
 
 For more details about this integration, please refer to
-https://github.com/Crazy-Duck/home-assistant-fiftyfive
+https://github.com/matzem79/home-assistant-fiftyfive
 """
 
 from __future__ import annotations
@@ -132,7 +132,6 @@ async def async_setup_entry(
         ),
         integration=async_get_loaded_integration(hass, entry.domain),
         coordinator=coordinator,
-        update_state={},
     )
 
     await coordinator.async_config_entry_first_refresh()

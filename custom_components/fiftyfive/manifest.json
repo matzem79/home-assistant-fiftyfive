@@ -2,15 +2,15 @@
   "domain": "fiftyfive",
   "name": "50five",
   "codeowners": [
-    "@pimhofstee"
+    "@matzem79"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/pimhofstee/50five-HA-2fa",
+  "documentation": "https://github.com/matzem79/home-assistant-fiftyfive",
   "integration_type": "device",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/pimhofstee/50five-HA-2fa/issues",
+  "issue_tracker": "https://github.com/matzem79/home-assistant-fiftyfive/issues",
   "requirements": [
     "fiftyfive>=0.6.0"
   ],
-  "version": "0.10.16"
+  "version": "0.11.0"
 }

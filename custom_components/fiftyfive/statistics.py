@@ -23,7 +23,7 @@ from homeassistant.const import UnitOfPower
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN, LOGGER, CONF_LOCAL_SOURCES, CONF_POWER_ENTITY
 
 # Month-abbreviation -> month-number map covering the portal locales the
 # integration supports (nl / en / fr).  The portal renders mode=3 labels like
@@ -261,6 +261,10 @@ async def async_import_power_history(
     registry = er.async_get(hass)
     imported_count = 0
     for idx, (labels, series) in history.items():
+        if entry.options.get(CONF_LOCAL_SOURCES, {}).get(str(idx), {}).get(CONF_POWER_ENTITY):
+            # Local power statistics are recorded from ESP events. Do not
+            # overwrite their history with the portal's averaged power graph.
+            continue
         entity_id = registry.async_get_entity_id(
             "sensor", DOMAIN, f"{idx}_{_POWER_KEY}"
         )

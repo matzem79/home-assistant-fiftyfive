@@ -1,310 +1,155 @@
-# Home Assistant 50five custom integration
+# 50five for Home Assistant: 2FA and external meters
 
-This custom integration allows you to interact with your 50five managed EV
-charger. It allows starting/stopping charge session as well as exposes some
-data about the charger (on-going sessions, status, ...) as sensors.
+Custom integration for 50five-managed EV chargers, with e-mail two-factor
+login, an absolute wallbox energy sensor, and optional external power and
+energy measurements.
+
+This fork extends [pimhofstee's 2FA branch](https://github.com/pimhofstee/home-assistant-fiftyfive/tree/feature/add-2fa-support),
+based on [Crazy-Duck's original integration](https://github.com/Crazy-Duck/home-assistant-fiftyfive).
+Original authorship and the GPL-3.0 license are preserved.
+
+## Features
+
+- Charger status, power, transaction energy and duration, card information.
+- Start/stop charging with a selected card, unlock, block/unblock, soft/hard reset.
+- E-mail 2FA setup with session-cookie reuse and persistence across HA restarts.
+- Absolute **hardware meter** in kWh, anchored to official `Meter start` and
+  `Meter stop` readings from the charger log.
+- Between official readings: cumulative transaction energy from the portal,
+  or faster updates from an optional external energy counter.
+- Independent, optional external power and energy sources per charger.
+- Configurable external power spike rejection (default: above 11 kW).
+- Stored meter offset and progress survive Home Assistant restarts.
 
 ## Installation
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Crazy-Duck&repository=home-assistant-fiftyfive&category=integration)
+Requires Home Assistant 2026.1 or newer, as declared in `hacs.json`.
 
-Alternatively:
+### HACS custom repository
 
-1. Install [HACS](https://hacs.xyz) if not already installed
-1. Search for "50five" in HACS
-1. Click **Download**
-1. Restart Home Assistant
-1. Add via Settings → Devices & Services
+After this fork is published:
 
-### Manual Installation
+1. In HACS, open **Custom repositories**.
+2. Add `https://github.com/matzem79/home-assistant-fiftyfive`, category **Integration**.
+3. Download **50five** and restart Home Assistant.
+4. Add the integration under **Settings → Devices & services**.
 
-1. Copy the `custom_components/fiftyfive` folder to your `<config>/custom_components/` directory
-1. Restart Home Assistant
-1. Add via Settings → Devices & Services
+The integration domain remains `fiftyfive`. Install one fork at a time. To
+switch from another 50five fork, back up the existing component directory and
+replace it with this version; the existing config entry and entity IDs can be
+reused. HACS must track this fork to avoid overwriting it with another fork's
+updates.
 
-## Configuration
+### Manual installation
 
-### Adding your charger
+1. Back up `/config/custom_components/fiftyfive`.
+2. Replace that directory with this repository's `custom_components/fiftyfive`.
+3. Restart Home Assistant.
 
-1. Navigate to **Settings** → **Devices & Services**
-1. Click **+ Add Integration**
-1. Search for **50five**
-1. Enter your 50five account credentials:
-    - **Username**: Your 50five username (your e-mail address by default)
-    - **Password**: Your account password
-    - **Market**: The market in which your account was created
-    - **Customer type**: Whether you're a native 50five customer or a former
-                         Shell one
+## Account setup and 2FA
 
-The integration discovers all chargers linked to your account and creates
-devices and sensors for each discovered charger.
+Enter your e-mail address, password, market and customer type. If the portal
+requires 2FA, enter the code sent by e-mail. The authenticated cookies are
+reused for polling and updated in the config entry.
 
-### Two-factor authentication (2FA)
+When the portal session expires, portal entities become unavailable and a
+notification asks you to sign in again. Open **Reconfigure** and complete 2FA
+manually. The integration does not automatically request another e-mail code.
+Valid external measurements can continue while the portal is unavailable;
+new official anchors and charger commands still require a valid session.
 
-The 50five / EVC-Net portal protects accounts with **e-mail based two-factor
-authentication**. When it is enabled on your account the setup becomes a two
-step process:
+## External power and energy sources
 
-1. Enter your credentials (see above) and click **Submit**. 50five will e-mail
-   a one-time verification code to the e-mail address of your account.
-1. A second form appears asking for the **Verification code**. Open the e-mail
-   from 50five, copy the code, paste it into the field and click **Submit**.
+Open **Settings → Devices & services → 50five → Configure**. Choose a charger,
+then select either source independently. Leave a field empty to use the portal.
 
-Once the code is accepted the integration stores the authenticated session so
-that normal polling does **not** require a new code.
+| External selection | Power sensor | Session energy and absolute meter |
+| --- | --- | --- |
+| None | Portal | Portal transaction energy + official meter logs |
+| Power only | External | Portal transaction energy + official meter logs |
+| Energy only | Portal | External counter increments + official meter logs |
+| Power and energy | External | External counter increments + official meter logs |
 
-#### How long does the session last?
+External power accepts **W or kW**; energy accepts a cumulative **Wh or kWh**
+counter. Both integration energy sensors publish **kWh**, and power publishes
+**kW**. Energy is not derived by integrating the external power sensor.
 
-The 50five portal keeps a session valid for about **24 hours** after the 2FA
-step (`PHPSESSID` cookie, `Max-Age=86400`). To make the session last as long as
-possible the integration:
+The input is a normal Home Assistant sensor: ESPHome pulse meters, suitable
+Shelly energy meters, Modbus meters, MQTT meters or a dedicated upstream meter
+can supply it. There is no direct ESPHome or Shelly dependency in this feature.
+A three-phase source must provide the sum across all phases for the charger.
 
-* **Reuses** the stored session cookies for all polling (no new code needed
-  between polls).
-* **Persists the freshest cookies** after every successful poll, so a Home
-  Assistant restart within the 24h window keeps working without a new code
-  (rather than falling back to the possibly-stale cookie captured at setup).
+The measurement must cover **only this wallbox**. A whole-house meter or a
+circuit shared with other loads cannot represent the wallbox's energy. A meter
+before the wallbox can include standby use and cable losses that its internal
+meter excludes. The calculated absolute meter is aligned with official charger
+readings, so it is not an independent lifetime reading of that upstream meter.
 
-#### What happens when the session expires?
+External power above the configured limit (default **11 kW**) is discarded;
+the last accepted power remains visible. This limit can be adjusted for a
+different charger rating. Zero is valid. An unavailable external power source
+falls back to the portal. Invalid units, negative values, NaN and infinity are
+not used. The original input entity is never changed.
 
-On every poll the integration verifies it can still fetch data from the portal.
-When the session has expired the portal stops returning data, and the
-integration:
+See [external meter behaviour and examples](docs/EXTERNAL-METERS.md).
 
-1. Raises an authentication failure, which makes Home Assistant show a
-   **"Reconfigure" / re-authentication** repair notification for the
-   integration (the entities go *unavailable* rather than silently showing
-   stale data).
-2. Lets you re-authenticate: open the notification, confirm your (pre-filled)
-   password and enter the **new verification code** that 50five e-mails you.
-   Polling resumes automatically.
+## Absolute hardware meter
 
-> [!NOTE]
-> Because the verification code is delivered by e-mail it cannot be obtained
-> unattended, so this ~24h re-authentication is expected and cannot be fully
-> automated. Accounts without 2FA continue to work with a single step as
-> before.
+During a transaction the portal calculation is:
 
-### Update notifications
-
-The integration automatically checks for new releases on GitHub once every 24
-hours (starting when the integration loads). When a newer version is available:
-
-* A **notification appears in Home Assistant's notification center** with the
-  installed and latest version numbers, and a link to the release notes.
-* The `binary_sensor.<charger>_update_available` sensor turns **ON**.
-
-The notification automatically dismisses itself once you update to the latest
-version.
-
-#### Troubleshooting update notifications
-
-If you've updated the integration but the notification still shows an old
-version, or no notification appears at all:
-
-1. **Check the logs** for `50five update check` entries:
-   - Go to **Settings** → **System** → **Logs**
-   - Search for `50five`
-   - Look for messages like:
-     * `50five update check started (installed: X.X.X)`
-     * `A new 50five release is available: X.X.X`
-     * `Update notification created`
-
-2. **Verify the installed version**:
-   - The integration reads the version from its own `manifest.json`
-   - If you installed manually, make sure you copied **all files** including
-     the updated manifest
-   - HACS users: the version should update automatically after clicking
-     "Update" and restarting
-
-3. **Trigger a manual check**:
-   - Restart Home Assistant (the update check runs on startup)
-   - Or wait up to 24 hours for the next automatic check
-
-4. **Check GitHub API access**:
-   - The integration queries
-     `https://api.github.com/repos/pimhofstee/50five-HA-2fa/releases/latest`
-   - If your Home Assistant instance has no internet access or GitHub is
-     unreachable, the check will fail silently (logged at WARNING level)
-
-### Actions
-
-#### Available service actions
-
-There are 7 service actions exposed through this integration which can be
-launched via the developer tools, helpers, automations, ... They are:
-
-* Start a charge session on a charger with a given card 
-* Stop an active session on a charger
-* Unlock the connector from a charger
-* Block a charger
-* Unblock a charger
-* Soft reset a charger
-* Hard reset a charger
-
-#### Buttons / switches
-
-It is a deliberate choice not to offer start/stop charging switches out of the
-box in this integration. The reason being that users can have multiple cards,
-chargers and channels associated with their accounts. Foreseeing switches for
-all possible combinations out-of-the-box would lead to a whole bunch of 
-switches littering your instance, with most of them likely to never be used.
-The easiest solution therefore is to simply point people towards template
-helpers, which allow you to create your own switches from the UI for the 
-card/charger/channel combos you prefer. The process is pretty simple:
-
-* Go to `Settings` > `Devices & services` > `Helpers`
-* Click `+ Create helper`
-* Select `Template`
-* Select `Switch`
-* Give it a name
-* Click `+ Add action` for `Actions on turn on` and `Actions on turn off`
-* Scroll down to `Other actions` and select 50five from the list
-* Select the `Start a charge session`/`Stop a charge session` action on the 
-  right
-* Select the charger from the dropdown and add the card RFID below
-* Click `Submit`
-
-The switch will now show up in the `Overview` dashboard. Additionally you can
-assign it an area in the house in its settings.
-
-## Power usage history
-
-The charging-power sensor is backfilled with Home Assistant long-term
-statistics using the same data the 50five portal graphs (its dashboard
-`current` service). On startup and hourly thereafter the integration imports
-the portal's hourly power history so the sensor's *Statistics* graph shows the
-recent past.
-
-Each hourly reading is placed on its exact timestamp using the portal's own
-graph labels (e.g. `07-jul. 06:00`), so the history lines up correctly even if
-Home Assistant's clock or time zone differs slightly from the portal. Hours in
-which the car wasn't charging are recorded as **0 kW**, so the graph stays
-continuous instead of showing gaps.
-
-Note: the portal only exposes roughly the **last three days** of hourly power
-data, so that is as far back as the history can be filled. Older history simply
-isn't available from 50five.
-
-### Manually re-importing history
-
-If the *Statistics* graph looks empty or has gaps (for example right after a
-Home Assistant restart, or after the integration was offline for a while), you
-can force an import that also includes the current hour:
-
-1. Go to **Developer Tools → Actions** (Services)
-2. Select **50five: Import power history** (`fiftyfive.import_power_history`)
-3. Press **Perform action**
-
-Check **Settings → System → Logs** for a line like
-`50five power history import completed: N statistics imported` to confirm it
-ran. These import logs are now at INFO level so you can see exactly what was
-imported (and why, if nothing was).
-
-### Integration up-to-date status
-
-Besides the notification and binary sensor described below, the integration now
-also exposes a first-class **Update** entity
-(`update.fiftyfive_integration_update`). It is always visible on the 50five
-device and shows the installed version versus the latest release, so you can
-tell at a glance whether you're up to date. Updating itself is still done
-through HACS.
-
-## Update notifications
-
-When a newer release of this integration is available on GitHub (`pimhofstee/50five-HA-2fa`), you'll get notified in **two ways**:
-
-### 🔔 Automatic notification (no setup needed)
-A notification appears automatically in your **Home Assistant notification center** with:
-- Installed and latest version numbers
-- Link to the release notes on GitHub
-
-The notification **auto-dismisses** when you update to the latest version.
-
-### 📊 Binary sensor (for custom automations)
-The integration also provides a **binary sensor** (`binary_sensor.fiftyfive_update_available`) that turns **ON** when a newer release is available. The sensor's attributes include:
-- `installed_version` — your current version
-- `latest_version` — latest version on GitHub
-- `release_url` — link to the release page
-
-Use this sensor to build custom automations (send mobile notifications, flash lights, add to dashboards, etc.).
-
-Both features check at **startup and then every 15 minutes**, so a newly
-published version shows up in the notification center within minutes instead of
-up to a day. The check looks at both GitHub *Releases* and raw *tags*, so a
-freshly pushed version tag is detected even before a formal release is
-published. Update via HACS as usual.
-
-**Want to check right now?** Call the **50five: Check for update** action
-(`fiftyfive.check_for_update`) from **Developer Tools → Actions** to force an
-immediate check; if a newer version exists the notification appears at once.
-
-**Example automations:**
-
-**Send a persistent notification:**
-```yaml
-automation:
-  - alias: "Notify when 50five update available"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.fiftyfive_update_available
-        to: "on"
-    action:
-      - service: persistent_notification.create
-        data:
-          title: "50five update available"
-          message: >
-            Installed: {{ state_attr('binary_sensor.fiftyfive_update_available', 'installed_version') }}
-            Latest: {{ state_attr('binary_sensor.fiftyfive_update_available', 'latest_version') }}
-            
-            [View release]({{ state_attr('binary_sensor.fiftyfive_update_available', 'release_url') }})
+```text
+absolute meter (kWh) = official Meter start (Wh) / 1000 + transaction energy (kWh)
 ```
 
-**Send mobile notification:**
-```yaml
-automation:
-  - alias: "Mobile notification for 50five update"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.fiftyfive_update_available
-        to: "on"
-    action:
-      - service: notify.mobile_app_your_phone
-        data:
-          title: "50five update available"
-          message: "Version {{ state_attr('binary_sensor.fiftyfive_update_available', 'latest_version') }} is now available!"
-          data:
-            url: "{{ state_attr('binary_sensor.fiftyfive_update_available', 'release_url') }}"
+With an external energy source, its increments advance the aligned meter and
+session energy instead. Its raw total need not equal the wallbox's lifetime
+reading. On each new official start/end reading the aligned value is corrected,
+including downward corrections. `state_class: total` allows these corrections
+without treating them as a reset. The entity keeps its stable unique ID
+`<charger IDX>_hardware_meter`.
+
+Without a usable official anchor, local increments cannot establish the
+wallbox's absolute reading. Missing data never resets the meter to zero.
+The existing **account-wide total energy** is a separate portal statistic.
+
+## Commands and history
+
+Buttons and actions remain available for start/stop, unlock, block/unblock and
+soft/hard reset. Starting requires the charge card RFID. Optional local sensors
+do not control charging.
+
+Portal power history is imported at startup and hourly for chargers using
+portal power. For a charger with external power selected, history imports are
+skipped so portal averages do not overwrite external measurement statistics.
+Previously recorded history is retained. The upstream actions
+`fiftyfive.import_power_history` and `fiftyfive.check_for_update` remain available.
+The update checker now points to this fork; releases must be published here.
+
+## Validation and limitations
+
+The owner reported that the modified integration works in their Home Assistant
+installation with an ESPHome pulse meter. This is a user-reported functional
+check, not independent validation of every failure/recovery scenario. Shelly,
+Modbus, MQTT and separate upstream meters are compatible by the sensor contract
+but have not been tested with hardware in this project.
+
+Local dependency-free tests cover meter parsing, kWh conversion, session
+accounting, official corrections, restarts, external counter resets, outage
+recovery, source selection and power spike rejection:
+
+```sh
+python3 -m unittest discover -s tests -v
 ```
 
-**Flash a dashboard light:**
-```yaml
-automation:
-  - alias: "Flash light for 50five update"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.fiftyfive_update_available
-        to: "on"
-    action:
-      - service: light.turn_on
-        target:
-          entity_id: light.office
-        data:
-          rgb_color: [255, 165, 0]
-          flash: short
-```
+The HA options dialog and firmware are not covered by these isolated tests.
+This extension currently uses charger **channel 1**. The portal normally updates
+transaction energy about every 15 minutes. External measurements update as HA
+receives their state changes. Delayed portal logs and counter outages can cause
+interim differences; official readings provide the eventual reconciliation.
+A hardware meter replacement/reset needs separate handling.
 
-**Add to dashboard:**
-Simply add `binary_sensor.fiftyfive_update_available` to any Lovelace card. It will show ON/OFF status and the installed/latest version attributes.
+## Development and release
 
-## Word of caution
-
-50five's API only updates transaction data every 15m, so take this into account
-when using this integration. Charger status takes about 10-15s to change after
-starting/stopping a session.
-
-### Channel support
-
-I do not have a charger with multiple channels, nor do I have any idea how the
-api behaves in case there are multiple channels. If you have multiple channels
-on your charger, please open an issue so we can figure out if anything breaks.
+See [fork preparation](FORK-PREPARATION.md), [changelog](CHANGELOG.md) and
+[contribution guidelines](CONTRIBUTING.md). A German implementation and test
+record is available in [METER-COUNTER.md](METER-COUNTER.md).
