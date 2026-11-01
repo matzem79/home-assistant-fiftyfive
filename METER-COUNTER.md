@@ -124,3 +124,17 @@ beobachteten Preisintervalle verteilt; keine Abrechnungsgenauigkeit zugesichert.
 Unbepreiste kWh sind als Attribut sichtbar. Kosten werden separat in HA-Storage
 gespeichert und beim Neustart wiederhergestellt. Kein Live-Test dieser neuen
 Funktion bisher; 19 zusätzliche Tests, insgesamt 48 lokale Tests erfolgreich.
+
+## Konfigurationsdialog-Fix (0.12.1)
+
+Das neue Preisfeld verwendete `step=0.0001`. Home Assistant erlaubt für
+NumberSelector nur numerische Schritte ab 0.001 oder `any`; die Formular-
+Erstellung konnte deshalb mit „Unknown error occurred“ abbrechen. Auf `any`
+geändert, um beliebig genaue Preise weiter zuzulassen. Drei neue Tests prüfen
+Stationsauswahl, Formularaufbau und erneutes Öffnen eines präzisen Preises.
+Insgesamt 51 lokale Tests erfolgreich.
+
+Der gleichzeitig gemeldete Tibber-Templatefehler (`currentSubscription` ist
+null und hat kein `priceInfo`) gehört zur externen Preisquelle und ist ein
+separater Fehler. Die Preisquelle muss gültige Werte/Einheiten liefern; fehlende
+Werte werden nicht als kostenloser Strom angenommen.

@@ -2,7 +2,7 @@
 
 ## Setup
 
-Install version 0.12.0, restart Home Assistant, then open
+Install version 0.12.1, restart Home Assistant, then open
 **Settings → Devices & services → 50five → Configure** and choose your charger.
 The cost options share the existing source-selection form. Select one mode:
 
@@ -118,7 +118,7 @@ separate meter can include standby consumption and line losses; see
 
 19 new isolated tests cover tariff units, fixed/dynamic/negative prices, missing
 prices, restarts, session boundaries, calendar changes including DST, end-reading
-corrections, and the shared HA sensor adapter. All 48 local tests pass.
+corrections, and the shared HA sensor adapter. All 51 local tests pass, including three options-form regressions.
 The cost options and actual Tibber entities have not yet been tested in a real
 HA installation. Existing upstream lint/hassfest checks still need to run on
 GitHub because a full HA environment is not available locally.

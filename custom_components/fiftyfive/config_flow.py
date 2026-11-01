@@ -331,7 +331,7 @@ class FiftyfiveOptionsFlow(config_entries.OptionsFlow):
             selector.SelectSelectorConfig(options=["none", "fixed", "entity"], translation_key="price_mode")
         )
         schema[vol.Optional(CONF_FIXED_PRICE, description={"suggested_value": current.get(CONF_FIXED_PRICE)})] = selector.NumberSelector(
-            selector.NumberSelectorConfig(min=-1000, max=1000, step=0.0001, unit_of_measurement=f"{self.hass.config.currency}/kWh", mode="box")
+            selector.NumberSelectorConfig(min=-1000, max=1000, step="any", unit_of_measurement=f"{self.hass.config.currency}/kWh", mode="box")
         )
         schema[vol.Optional(CONF_PRICE_ENTITY, description={"suggested_value": current.get(CONF_PRICE_ENTITY)})] = selector.EntitySelector(
             selector.EntitySelectorConfig(domain="sensor")

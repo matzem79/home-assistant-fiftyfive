@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.1 — prepared, not yet published
+
+- Fix the options form failing to render: HA number selectors reject numeric
+  steps below 0.001. Use `step: any` for precise fixed kWh prices.
+- Add three options-form regression tests; all 51 local tests pass.
+
 ## 0.12.0 — prepared, not yet published
 
 - Add optional per-charger fixed kWh pricing or a live price entity (e.g. Tibber).
