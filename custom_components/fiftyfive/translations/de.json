@@ -3,6 +3,18 @@
         "sensor": {
             "hardware_meter": {
                 "name": "Wallbox-Zählerstand"
+            },
+            "cost_session": {
+                "name": "Kosten Sitzung"
+            },
+            "cost_day": {
+                "name": "Kosten heute"
+            },
+            "cost_month": {
+                "name": "Kosten Monat"
+            },
+            "cost_total": {
+                "name": "Kosten gesamt"
             }
         }
     },
@@ -20,12 +32,25 @@
                 "data": {
                     "power_entity": "Leistungssensor (optional)",
                     "energy_entity": "Energiezähler (optional)",
-                    "max_power_kw": "Maximale Leistung"
+                    "max_power_kw": "Maximale Leistung",
+                    "price_mode": "Kostenberechnung",
+                    "fixed_price": "Fester Preis pro kWh",
+                    "price_entity": "Preisentität"
                 }
             }
         },
         "error": {
-            "invalid_source": "Sensor nicht vorhanden, falsche Einheit oder 50five-Sensor als Quelle."
+            "invalid_source": "Sensor nicht vorhanden, falsche Einheit oder 50five-Sensor als Quelle.",
+            "invalid_price": "Gültigen Preis oder eine Preisentität mit passender Währung/kWh wählen."
+        }
+    },
+    "selector": {
+        "price_mode": {
+            "options": {
+                "none": "Deaktiviert",
+                "fixed": "Fester Preis",
+                "entity": "Preisentität (dynamisch)"
+            }
         }
     }
 }

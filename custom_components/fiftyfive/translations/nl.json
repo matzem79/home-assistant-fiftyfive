@@ -44,6 +44,13 @@
                 "fiftyfive": "50five",
                 "shell": "Voormalig Shell"
             }
+        },
+        "price_mode": {
+            "options": {
+                "none": "Uitgeschakeld",
+                "fixed": "Vaste prijs",
+                "entity": "Prijsentiteit (dynamisch)"
+            }
         }
     },
     "entity": {
@@ -85,6 +92,18 @@
             },
             "hardware_meter": {
                 "name": "Hardwaremeter"
+            },
+            "cost_session": {
+                "name": "Sessiekosten"
+            },
+            "cost_day": {
+                "name": "Kosten vandaag"
+            },
+            "cost_month": {
+                "name": "Maandkosten"
+            },
+            "cost_total": {
+                "name": "Totale kosten"
             }
         }
     },
@@ -186,12 +205,16 @@
                 "data": {
                     "power_entity": "Vermogenssensor (optioneel)",
                     "energy_entity": "Energieteller (optioneel)",
-                    "max_power_kw": "Maximaal vermogen"
+                    "max_power_kw": "Maximaal vermogen",
+                    "price_mode": "Kostenberekening",
+                    "fixed_price": "Vaste prijs per kWh",
+                    "price_entity": "Prijsentiteit"
                 }
             }
         },
         "error": {
-            "invalid_source": "Sensor ontbreekt, ongeldige eenheid of 50five-sensor als bron."
+            "invalid_source": "Sensor ontbreekt, ongeldige eenheid of 50five-sensor als bron.",
+            "invalid_price": "Kies een geldige prijs of prijsentiteit in de ingestelde valuta/kWh."
         }
     }
 }

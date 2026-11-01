@@ -44,6 +44,13 @@
                 "fiftyfive": "50five",
                 "shell": "Ancien client Shell"
             }
+        },
+        "price_mode": {
+            "options": {
+                "none": "Désactivé",
+                "fixed": "Prix fixe",
+                "entity": "Entité de prix (dynamique)"
+            }
         }
     },
     "entity": {
@@ -85,6 +92,18 @@
             },
             "hardware_meter": {
                 "name": "Compteur matériel"
+            },
+            "cost_session": {
+                "name": "Coût de la session"
+            },
+            "cost_day": {
+                "name": "Coût aujourd’hui"
+            },
+            "cost_month": {
+                "name": "Coût mensuel"
+            },
+            "cost_total": {
+                "name": "Coût total"
             }
         }
     },
@@ -186,12 +205,16 @@
                 "data": {
                     "power_entity": "Capteur de puissance (facultatif)",
                     "energy_entity": "Compteur énergie (facultatif)",
-                    "max_power_kw": "Puissance maximale"
+                    "max_power_kw": "Puissance maximale",
+                    "price_mode": "Calcul des coûts",
+                    "fixed_price": "Prix fixe par kWh",
+                    "price_entity": "Entité de prix"
                 }
             }
         },
         "error": {
-            "invalid_source": "Capteur absent, unité incorrecte ou capteur 50five utilisé comme source."
+            "invalid_source": "Capteur absent, unité incorrecte ou capteur 50five utilisé comme source.",
+            "invalid_price": "Choisissez un prix valide ou une entité de prix dans la devise configurée/kWh."
         }
     }
 }

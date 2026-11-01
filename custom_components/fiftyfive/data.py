@@ -24,3 +24,4 @@ class FiftyfiveData:
     coordinator: FiftyfiveDataUpdateCoordinator
     integration: Integration
     update_state: dict = field(default_factory=dict)
+    cost_controllers: list = field(default_factory=list)

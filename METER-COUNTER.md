@@ -109,3 +109,18 @@ Der Dauerparser unterstützt nun neben `hh:mm` auch Tagesangaben wie
 aus Upstream-Version 0.10.0. Ungültige Angaben ergeben wie upstream 0 Minuten
 statt einer Exception. Fünf zusätzliche Tests prüfen Stunden, einen/mehrere
 Tage sowie leere und ungültige Angaben. Insgesamt 29 Tests erfolgreich.
+
+## Kostenberechnung (0.12.0)
+
+Pro Wallbox ist ein fester Preis pro kWh oder eine dynamische Preisentität
+konfigurierbar. Vier zusätzliche Geldsensoren liefern Kosten der Sitzung,
+heute, im laufenden Monat und insgesamt seit Erfassungsbeginn. Währung und
+Kalenderzeitzone stammen aus Home Assistant. Negative Preise sind zulässig.
+Details: [Kosten und Preisquellen](docs/COSTS.md).
+
+Die Funktion erfasst ab der ersten beobachteten Energie nach Aktivierung.
+Bei dynamischen Tarifen werden verspätete Energiemengen zeitanteilig auf die
+beobachteten Preisintervalle verteilt; keine Abrechnungsgenauigkeit zugesichert.
+Unbepreiste kWh sind als Attribut sichtbar. Kosten werden separat in HA-Storage
+gespeichert und beim Neustart wiederhergestellt. Kein Live-Test dieser neuen
+Funktion bisher; 19 zusätzliche Tests, insgesamt 48 lokale Tests erfolgreich.

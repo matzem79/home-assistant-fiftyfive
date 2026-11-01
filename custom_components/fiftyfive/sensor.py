@@ -142,6 +142,8 @@ async def async_setup_entry(
         for network in entry.runtime_data.coordinator.data
     )
     async_add_entities(entities)
+    from .cost_sensor import async_setup_cost_sensors
+    await async_setup_cost_sensors(hass, entry, bridges, async_add_entities)
 
 
 class FiftyfiveChargerSensor(FiftyfiveEntity, SensorEntity):
@@ -258,6 +260,10 @@ class FiftyfiveMeterSensor(FiftyfiveEntity, RestoreSensor):
             if isinstance(event, dict) and event.get("kind") in ("start", "stop") and isinstance(event.get("wh"), int) and event["wh"] >= 0:
                 self._meter.update(event, state.attributes.get("session_energy_kwh"))
         self._update_meter()
+        if self.source is not None:
+            self.source.ready = True
+            for ready_callback in self.source.ready_callbacks:
+                ready_callback()
         if self.source is not None and self.source.entities:
             self.async_on_remove(async_track_state_change_event(
                 self.hass, self.source.entities, self._local_changed,
@@ -294,6 +300,8 @@ class FiftyfiveSourceBridge:
         self.coordinator = coordinator
         self.idx = idx
         self.options = options
+        self.ready_callbacks = []
+        self.ready = False
         self.portal = MeterEstimate()
         self.external = ExternalEnergy()
         self.last_power = None

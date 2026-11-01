@@ -93,6 +93,34 @@ not used. The original input entity is never changed.
 
 See [external meter behaviour and examples](docs/EXTERNAL-METERS.md).
 
+## Charging costs
+
+Under **50five → Configure**, choose a charger and set **Cost calculation**:
+
+- **Disabled:** no cost sensors; existing saved totals are retained.
+- **Fixed price:** enter the price per kWh in your HA-configured currency,
+  for example `0.30` EUR/kWh.
+- **Price entity:** select a live tariff sensor, for example Tibber's current
+  electricity price. Supported units are the HA currency per kWh or MWh;
+  EUR cent/kWh values are also accepted. Negative prices are supported.
+
+Four monetary entities appear on the charger: **Session cost**, **Cost today**,
+**Monthly cost** and **Total cost**. Tracking starts with the first valid energy
+sample after activation; past charging history is not retroactively billed.
+Totals survive HA restarts and are independent of whether external energy
+is selected. Local calendar days/months use the HA time zone.
+
+Dynamic tariffs are applied to energy increments using observed price changes.
+For delayed energy samples, increments are distributed uniformly across the
+elapsed price/day periods. Frequent external energy updates improve accuracy.
+Missing prices are recorded as `unpriced_energy_kwh`; `cost_complete: false`
+means the displayed numeric cost is only the known subtotal. No missing price
+is silently assumed to be zero. This is an estimate, not a supplier invoice.
+
+See [cost accounting and configuration](docs/COSTS.md) for restart gaps,
+reconciliation and reset behaviour. Cost accounting is covered by isolated tests
+but has not yet been verified in a live HA/Tibber installation.
+
 ## Absolute hardware meter
 
 During a transaction the portal calculation is:

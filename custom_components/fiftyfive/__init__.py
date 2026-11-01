@@ -191,6 +191,9 @@ async def async_unload_entry(
     entry: FiftyfiveConfigEntry,
 ) -> bool:
     """Handle removal of an entry."""
+    for controller in entry.runtime_data.cost_controllers:
+        controller.stop()
+        await controller.store.async_save(controller.snapshot())
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 

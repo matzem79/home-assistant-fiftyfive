@@ -23,7 +23,8 @@ from .auth import (
     extract_cookies,
 )
 from .const import (CONF_2FA_CODE, CONF_COOKIES, CONF_CUST_TYPE, DOMAIN, LOGGER,
-                    CONF_LOCAL_SOURCES, CONF_POWER_ENTITY, CONF_ENERGY_ENTITY, CONF_MAX_POWER)
+                    CONF_LOCAL_SOURCES, CONF_POWER_ENTITY, CONF_ENERGY_ENTITY, CONF_MAX_POWER,
+                    CONF_PRICE_MODE, CONF_FIXED_PRICE, CONF_PRICE_ENTITY)
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -301,6 +302,17 @@ class FiftyfiveOptionsFlow(config_entries.OptionsFlow):
                 if registered := registry.async_get(user_input.get(key, "")):
                     if registered.platform == DOMAIN:
                         errors[key] = "invalid_source"
+            mode = user_input.get(CONF_PRICE_MODE, "none")
+            if mode == "entity":
+                from .costs import price_value
+                state = self.hass.states.get(user_input.get(CONF_PRICE_ENTITY, ""))
+                if price_value(state, self.hass.config.currency) is None:
+                    errors[CONF_PRICE_ENTITY] = "invalid_price"
+                registered = registry.async_get(user_input.get(CONF_PRICE_ENTITY, ""))
+                if registered is not None and registered.platform == DOMAIN:
+                    errors[CONF_PRICE_ENTITY] = "invalid_price"
+            if mode == "fixed" and CONF_FIXED_PRICE not in user_input:
+                errors[CONF_FIXED_PRICE] = "invalid_price"
             if not errors:
                 sources[self._charger] = user_input
                 return self.async_create_entry(title="", data={
@@ -314,5 +326,14 @@ class FiftyfiveOptionsFlow(config_entries.OptionsFlow):
             ))
         schema[vol.Required(CONF_MAX_POWER, default=current.get(CONF_MAX_POWER, 11.0))] = selector.NumberSelector(
             selector.NumberSelectorConfig(min=0.1, max=100, step=0.1, unit_of_measurement="kW", mode="box")
+        )
+        schema[vol.Required(CONF_PRICE_MODE, default=current.get(CONF_PRICE_MODE, "none"))] = selector.SelectSelector(
+            selector.SelectSelectorConfig(options=["none", "fixed", "entity"], translation_key="price_mode")
+        )
+        schema[vol.Optional(CONF_FIXED_PRICE, description={"suggested_value": current.get(CONF_FIXED_PRICE)})] = selector.NumberSelector(
+            selector.NumberSelectorConfig(min=-1000, max=1000, step=0.0001, unit_of_measurement=f"{self.hass.config.currency}/kWh", mode="box")
+        )
+        schema[vol.Optional(CONF_PRICE_ENTITY, description={"suggested_value": current.get(CONF_PRICE_ENTITY)})] = selector.EntitySelector(
+            selector.EntitySelectorConfig(domain="sensor")
         )
         return self.async_show_form(step_id="sources", data_schema=vol.Schema(schema), errors=errors)

@@ -44,6 +44,13 @@
                 "fiftyfive": "50five",
                 "shell": "Former Shell"
             }
+        },
+        "price_mode": {
+            "options": {
+                "none": "Disabled",
+                "fixed": "Fixed price",
+                "entity": "Price entity (dynamic)"
+            }
         }
     },
     "entity": {
@@ -85,6 +92,18 @@
             },
             "hardware_meter": {
                 "name": "Hardware meter"
+            },
+            "cost_session": {
+                "name": "Session cost"
+            },
+            "cost_day": {
+                "name": "Cost today"
+            },
+            "cost_month": {
+                "name": "Monthly cost"
+            },
+            "cost_total": {
+                "name": "Total cost"
             }
         }
     },
@@ -186,12 +205,16 @@
                 "data": {
                     "power_entity": "Power sensor (optional)",
                     "energy_entity": "Energy counter (optional)",
-                    "max_power_kw": "Maximum power"
+                    "max_power_kw": "Maximum power",
+                    "price_mode": "Cost calculation",
+                    "fixed_price": "Fixed price per kWh",
+                    "price_entity": "Price entity"
                 }
             }
         },
         "error": {
-            "invalid_source": "Sensor missing, unsupported unit or a 50five sensor used as source."
+            "invalid_source": "Sensor missing, unsupported unit or a 50five sensor used as source.",
+            "invalid_price": "Choose a valid price or a price entity in the configured currency/kWh."
         }
     }
 }

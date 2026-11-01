@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.12.0 — prepared, not yet published
+
+- Add optional per-charger fixed kWh pricing or a live price entity (e.g. Tibber).
+- Add session, daily, monthly and lifetime monetary cost sensors.
+- Account for observed dynamic and negative prices, local calendar boundaries,
+  official meter corrections and unavailable tariff periods.
+- Persist accounting across restarts; expose unpriced energy instead of treating
+  missing prices as free electricity. Costs start with the first observed sample.
+- Add 19 cost-ledger and HA-adapter tests; all 48 local tests pass.
+- Cost configuration and a real Tibber price entity still need live validation.
+
 ## 0.11.0 — prepared, not yet published
 
 - Port upstream issue #83 duration fix: parse `NdHH:mm` as well as `hh:mm`,
