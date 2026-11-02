@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.12.2 — prepared, not yet published
+
+- Preserve the portal decimal separator when converting total energy to kWh;
+  variable decimal precision no longer changes the scale. Existing incorrect
+  recorder history is not repaired automatically.
+- Declare optional recorder use and the EV charging category; skip history
+  imports when recorder is not configured. Validate the meter-counter branch
+  and pin CI runners to Ubuntu 24.04.
+- Add a separate Wallbox dashboard card with original-image crop, charging
+  controls, vehicle values, cost sensors and an embedded detail/history view.
+  Dashboard installation remains separate from the HACS integration install.
+- Local verification: 54 Python tests and 8 card tests pass. Live dashboard
+  rendering and GitHub HACS/Hassfest checks still need verification.
+
 ## 0.12.1 — prepared, not yet published
 
 - Fix the options form failing to render: HA number selectors reject numeric
