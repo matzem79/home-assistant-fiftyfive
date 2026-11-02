@@ -372,8 +372,12 @@ class FiftyfiveApiClient:
             number_str = data.get("number", "")
             unit = data.get("unit", "kWh")
 
-            # Parse European-formatted number (remove commas/dots as thousand sep)
-            cleaned = number_str.replace(",", "").replace(".", "")
+            # The portal uses a decimal comma, with variable precision (e.g.
+            # "2,360" becomes "2,36"). Preserve it when normalizing to kWh.
+            # Also accept numeric responses and dot-decimal values.
+            cleaned = str(number_str).strip().replace(" ", "").replace("\u00a0", "").replace("\u202f", "")
+            if "," in cleaned:
+                cleaned = cleaned.replace(".", "").replace(",", ".")
             value = float(cleaned)
 
             # Normalize to kWh
