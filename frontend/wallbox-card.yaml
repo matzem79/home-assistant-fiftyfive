@@ -1,6 +1,6 @@
 type: custom:wallbox-card
 title: Wallbox
-vehicle_name: vehicle
+vehicle_name: Mein Fahrzeug
 entities:
   status: sensor.wallbox_charger_status
   power: sensor.wallbox_power_draw

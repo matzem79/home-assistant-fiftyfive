@@ -90,7 +90,7 @@ class WallboxCard extends HTMLElement {
     };
     const normalizedState = chargeState?.replace(/^CHARGE_STATE_/, '');
     const connection = !this._valid('connected') ? 'Ladestatus nicht verfügbar' : chargeLabels[normalizedState] || chargeState;
-    return `<section class="vehicle"><div class="eyebrow">FAHRZEUG</div><div class="vehicle-title"><span>${esc(this._config.vehicle_name || 'vehicle')}</span><button data-info="soc">${validSoc ? esc(this._format('soc')) : '—'}</button></div><div class="track" role="img" aria-label="${validSoc ? `Akku ${soc} Prozent` : 'Akku nicht verfügbar'}"><div style="width:${validSoc ? soc : 0}%"></div></div><div class="vehicle-meta"><button data-info="connected">${esc(connection)}</button><button data-info="end">Ladeende ${esc(this._format('end'))}</button></div></section>`;
+    return `<section class="vehicle"><div class="eyebrow">FAHRZEUG</div><div class="vehicle-title"><span>${esc(this._config.vehicle_name || 'Mein Fahrzeug')}</span><button data-info="soc">${validSoc ? esc(this._format('soc')) : '—'}</button></div><div class="track" role="img" aria-label="${validSoc ? `Akku ${soc} Prozent` : 'Akku nicht verfügbar'}"><div style="width:${validSoc ? soc : 0}%"></div></div><div class="vehicle-meta"><button data-info="connected">${esc(connection)}</button><button data-info="end">Ladeende ${esc(this._format('end'))}</button></div></section>`;
   }
   _costs() {
     const incomplete = ['cost_day','cost_month','cost_session'].some(k => this._state(k)?.attributes.cost_complete === false);

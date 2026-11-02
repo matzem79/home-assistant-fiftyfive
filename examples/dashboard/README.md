@@ -3,7 +3,7 @@
 1. `images/homeAdvanced.png` nach `/config/www/images/homeAdvanced.png` kopieren. Den Zielordner bei Bedarf anlegen.
 2. Im Dashboard eine manuelle Karte hinzufügen und den Inhalt von `wallbox-picture-elements.yaml` einfügen oder die bestehende Karte damit ersetzen.
 
-Die Vorlage verwendet die vom Nutzer angegebenen Entity-IDs für wallbox und das Fahrzeug vehicle. Bei anderen Installationen die IDs anpassen.
+Die Vorlage verwendet die vom Nutzer angegebenen Entity-IDs für wallbox und das Fahrzeug Mein Fahrzeug. Bei anderen Installationen die IDs anpassen.
 
 Die LED sitzt an der Position aus der bisherigen Karte: Laden blau, Bereit gelb, Laden (voll) grün, Transaktion abschließen orange, sonst grau (einschließlich unbekannt/nicht verfügbar). Die Bedingungen vergleichen die tatsächlichen Zustände exakt.
 
@@ -16,3 +16,5 @@ Die YAML-Datei ist eine Dashboard-Vorlage. Durch Kopieren des Integrationsordner
 ## Eigene Karte mit Detailansicht
 
 Die überarbeitete Variante A ist als eigene Karte unter [frontend](../../frontend/README.md) umgesetzt. Sie ersetzt die oben beschriebene Picture-Elements-Vorlage bei Verwendung der neuen Karte.
+
+Alle Entity-IDs und Fahrzeugnamen sind neutrale Beispiele und müssen vor Verwendung an die eigene Installation angepasst werden.
