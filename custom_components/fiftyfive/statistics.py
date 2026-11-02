@@ -240,6 +240,11 @@ async def async_import_power_history(
     Best effort: any failure is logged and swallowed so it can never break the
     integration setup or polling.
     """
+    # Recording is optional; status and charging controls work without it.
+    if "recorder" not in hass.config.components:
+        LOGGER.debug("Skipping power history import: recorder is not configured")
+        return
+
     # Imported lazily (not at module top-level): importing the recorder pulls
     # in SQLAlchemy and is heavy, which would block the event loop while Home
     # Assistant imports the integration.

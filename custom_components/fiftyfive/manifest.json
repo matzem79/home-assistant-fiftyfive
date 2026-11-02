@@ -1,6 +1,12 @@
 {
   "domain": "fiftyfive",
   "name": "50five",
+  "after_dependencies": [
+    "recorder"
+  ],
+  "categories": [
+    "energy.ev_charging"
+  ],
   "codeowners": [
     "@matzem79"
   ],
