@@ -1,0 +1,21 @@
+type: custom:wallbox-card
+title: Wallbox
+vehicle_name: vehicle
+entities:
+  status: sensor.wallbox_charger_status
+  power: sensor.wallbox_power_draw
+  energy: sensor.wallbox_energy_delivered_during_transaction
+  duration: sensor.wallbox_transaction_duration
+  card: sensor.wallbox_card_in_use
+  soc: sensor.vehicle_soc_primary
+  connected: sensor.vehicle_charge_state
+  end: sensor.vehicle_charging_estimated_date_reached
+  start: button.50five_laden_start
+  stop: button.50five_laden_stop
+  # Tatsächliche Entity-IDs unter Entwicklerwerkzeuge → Zustände einsetzen:
+  cost_day: ''
+  cost_month: ''
+  cost_session: ''
+  meter: ''
+  # Optional: Sensor für die heute geladene Energie (nicht Sitzungsenergie).
+  # energy_day: sensor.wallbox_energie_heute
