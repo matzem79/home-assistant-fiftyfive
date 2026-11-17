@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.3
+
+- Pin the `fiftyfive` library to 0.6.0. Version 1.0.0 (released 2026-11-06)
+  replaced the evc-net portal client with a GraphQL client and removed the
+  request classes this integration imports (`Block`, `Start`, `Log`, ...),
+  so setup failed with `ImportError: cannot import name 'Block'`.
+
 ## 0.12.2 — prepared, not yet published
 
 - Preserve the portal decimal separator when converting total energy to kWh;
